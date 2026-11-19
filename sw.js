@@ -1,5 +1,5 @@
-const V='shop-v1',SHELL=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/icon.svg'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
+const V='otbasy-v2',SHELL=['./','index.html','manifest.webmanifest','qrcode.min.js','icons/icon-192.png','icons/icon-512.png','icons/icon.svg'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!=V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{if(e.request.method!='GET')return;
-e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(n=>{if(n&&(n.ok||n.type=='opaque')){const c=n.clone();caches.open(V).then(x=>x.put(e.request,c))}return n}).catch(()=>caches.match('index.html'))))});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!='GET'||r.url.includes('.supabase.co'))return;
+e.respondWith(caches.match(r).then(c=>{const n=fetch(r).then(x=>{if(x&&(x.ok||x.type=='opaque')){const k=x.clone();caches.open(V).then(h=>h.put(r,k))}return x}).catch(()=>c||(r.mode=='navigate'?caches.match('index.html'):Response.error()));return c||n}))});
